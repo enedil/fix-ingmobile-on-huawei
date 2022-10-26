@@ -19,7 +19,7 @@ def get_size(name: str) -> int:
     return pathlib.Path(name).stat().st_size
 
 def main() -> None:
-    subprocess.check_output("adb devices".split())
+    adb(["devices"])
 
     out = adb_pm(["path", ing_package]).decode()
     apks = [x.split(":")[1] for x in out.splitlines()]
