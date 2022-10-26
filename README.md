@@ -10,6 +10,7 @@ Jak sobie poradzić?
 2. Zainstaluj `adb` (zawarte w https://developer.android.com/studio , sekcja "Command line tools only")
 3. Pobierz skrypt `fix_ing.py` z tego repozytorium.
 4. Upewnij się, że aplikacja Moje ING jest zainstalowana.
-5. Uruchom skrypt: `python3 ./fix_ing.py`.
+5. Podłącz telefon do komputera kablem USB.
+6. Uruchom skrypt: `python3 ./fix_ing.py`.
 
 Skrypt był testowany na Linuksie (Fedora). Ma również spore szanse działać na macOS. Ma duże szanse *nie* działać na Windowsie.
