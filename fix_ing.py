@@ -3,16 +3,17 @@ import re
 import pathlib
 import logging
 import subprocess
+from typing import List
 
 logger = logging.getLogger(__name__)
 
 ing_package = "pl.ing.mojeing"
 google_installer = "com.android.vending"
 
-def adb(args: list[str]) -> str:
+def adb(args: List[str]) -> str:
     return subprocess.check_output(["adb"] + args)
 
-def adb_pm(args: list[str]) -> str:
+def adb_pm(args: List[str]) -> str:
     return adb(["shell", "pm"] + args)
 
 def get_size(name: str) -> int:
