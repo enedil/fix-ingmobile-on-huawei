@@ -13,4 +13,4 @@ Jak sobie poradzić?
 5. Podłącz telefon do komputera kablem USB.
 6. Uruchom skrypt: `python3 ./fix_ing.py`.
 
-Skrypt był testowany na Linuksie (Fedora). Ma również spore szanse działać na macOS. Ma duże szanse *nie* działać na Windowsie.
+Skrypt był testowany na Linuksie (Fedora). Ma również spore szanse działać na macOS. Ma duże szanse **nie** działać na Windowsie.
