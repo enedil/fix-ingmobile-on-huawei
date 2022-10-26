@@ -1,47 +1,54 @@
 #!/usr/bin/env python
 import re
-import pathlib
 import logging
 import subprocess
-from typing import List
+import os
 
 logger = logging.getLogger(__name__)
 
 ing_package = "pl.ing.mojeing"
 google_installer = "com.android.vending"
 
-def adb(args: List[str]) -> str:
-    return subprocess.check_output(["adb"] + args)
+mode_standalone = os.getenv("ING_STANDALONE") is not None
 
-def adb_pm(args: List[str]) -> str:
-    return adb(["shell", "pm"] + args)
+def shell(*args) -> str:
+    prefix = ["adb", "shell"]
+    if mode_standalone:
+        prefix = []
+    return subprocess.check_output(prefix + list(args)).decode()
 
-def get_size(name: str) -> int:
-    return pathlib.Path(name).stat().st_size
+def pm(*args) -> str:
+    return shell("pm", *args)
+
+def adb_devices() -> None:
+    if not mode_standalone:
+        logging.warning("Initializing connection with device via ADB")
+        subprocess.check_output("adb devices".split())
+
+def get_size(file_path) -> str:
+    return str(int(shell("stat", "-c", "%s", file_path)))
 
 def main() -> None:
-    adb(["devices"])
+    adb_devices()
 
-    out = adb_pm(["path", ing_package]).decode()
+    out = pm("path", ing_package)
     apks = [x.split(":")[1] for x in out.splitlines()]
-    pulled_names = [f"ing_{i}.apk" for i in range(len(apks))]
-
     logger.warning(f"Found APKs {apks=}")
 
-    for name, apk in zip(pulled_names, apks):
-        adb(["pull", apk, name])
+    copied_names = [f"ing_{i}.apk" for i in range(len(apks))]
 
-    for name in pulled_names:
-        adb(["push", name, f"/data/local/tmp/"])
+    for name, apk in zip(copied_names, apks):
+        shell("cp", apk, f"/data/local/tmp/{name}")
 
-    logger.warning(f"{adb_pm(['uninstall', ing_package])=}")
+    pm('uninstall', ing_package)
 
-    out = adb_pm(["install-create", "-S", str(len(apks)), "-i", google_installer]).decode()
+    out = pm("install-create", "-S", str(len(apks)), "-i", google_installer)
     installation_id = re.findall(r"\[(\d+)\]", out)[0]
 
-    for i, name in enumerate(pulled_names):
-        adb_pm(["install-write", "-S", str(get_size(name)), str(installation_id), str(i), f"/data/local/tmp/{name}"])
-    logger.warning(f"Finished, status = {adb_pm(['install-commit', str(installation_id)])}")
+    for i, name in enumerate(copied_names):
+        name = f"/data/local/tmp/{name}"
+        pm("install-write", "-S", get_size(name), str(installation_id), str(i), name)
+    logger.warning("Finished, status = " + pm('install-commit', str(installation_id)))
 
 
 if __name__ == '__main__':
